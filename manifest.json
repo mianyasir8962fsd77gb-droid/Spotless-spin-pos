@@ -1,0 +1,10 @@
+{
+"name": "SPOTLESS SPIN LAUNDRY W.L.L. POS",
+"short_name": "Spotless POS",
+"description": "Laundry orders, receipts and payments",
+"start_url": "./",
+"scope": "./",
+"display": "standalone",
+"background_color": "#ffffff",
+"theme_color": "#168447"
+}
