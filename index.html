@@ -22,8 +22,18 @@ button{background:#087653;color:white;border:0;font-weight:bold}
 .small{font-size:13px;color:#53675d}
 @media(max-width:480px){.row{grid-template-columns:1fr}}
 </style>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#168447">
+<meta name="mobile-web-app-capable" content="yes">
 </head>
-<body>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js");
+  });
+}
+</script>
+ <body>
 <header>
 <h1>SPOTLESS SPIN</h1>
 <div>LAUNDRY W.L.L.</div>
