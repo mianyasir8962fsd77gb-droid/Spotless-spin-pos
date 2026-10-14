@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SPOTLESS SPIN LAUNDRY POS</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#f0f7f3;color:#183b30}
+header{background:#087653;color:white;text-align:center;padding:22px 10px}
+main{max-width:700px;margin:auto;padding:15px}
+.card{background:white;padding:16px;margin-bottom:15px;border-radius:12px}
+input,select,textarea,button{box-sizing:border-box;width:100%;padding:12px;margin:6px 0;border-radius:8px;font-size:16px}
+input,select,textarea{border:1px solid #ccc}
+button{background:#087653;color:white;border:0;font-weight:bold}
+.total{font-size:22px;color:#087653;font-weight:bold}
+.order{border:1px solid #ddd;padding:12px;margin:10px 0;border-radius:8px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+<h2>SPOTLESS SPIN</h2>
+<p>LAUNDRY W.L.L.</p>
+<p>LAUNDRY POS • BAHRAIN</p>
+</header>
+<main>
+<div class="card">
+<h3>New Laundry Order</h3>
+<form id="form">
+<label>Customer name</label>
+<input id="customer" required>
+<label>Phone / WhatsApp</label>
+<input id="phone">
+<label>Service</label>
+<select id="service">
+<option>Wash & Fold</option>
+<option>Wash & Iron</option>
+<option>Ironing</option>
+<option>Dry Cleaning</option>
+<option>Blanket / Duvet</option>
+</select>
+<label>Quantity</label>
+<input id="qty" type="number" min="1" value="1" required>
+<label>Price per unit (BHD)</label>
+<input id="price" type="number" min="0" step="0.001" value="1.000" required>
+<label>Payment received (BHD)</label>
+<input id="paid" type="number" min="0" step="0.001" value="0">
+<label>Promised date</label>
+<input id="due" type="date">
+<label>Order status</label>
+<select id="status">
+<option>Received</option>
+<option>Processing</option>
+<option>Ready</option>
+<option>Delivered</option>
+</select>
+<label>Notes</label>
+<textarea id="notes"></textarea>
+<p>Total</p>
+<div class="total" id="total">BHD 1.000</div>
+<button type="submit">SAVE ORDER</button>
+</form>
+</div>
+<div class="card">
+<button onclick="showOrders()">VIEW ORDERS</button>
+<div id="orders"></div>
+<h3>Daily Summary</h3>
+<p id="summary">No orders yet.</p>
+</div>
+</main>
+<script>
+alert("SPOTLESS SPIN POS is ready!");
+</script>
+</body>
+</html>
