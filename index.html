@@ -579,5 +579,158 @@ if ('serviceWorker' in navigator) {
   showItems();
 })();
 </script>
+<section id="garment-inventory" style="margin:20px;padding:16px;border:2px solid #087443;border-radius:12px;font-family:Arial,sans-serif">
+  <h2 style="color:#087443">Customer Garment Inventory</h2>
+  <p>Track garments received, in process, ready for collection, and delivered.</p>
+
+  <form id="garment-form">
+    <label>Customer name</label>
+    <input id="garment-customer" required placeholder="Customer name" style="display:block;box-sizing:border-box;width:100%;padding:10px;margin:6px 0 12px">
+
+    <label>Receipt / Order number</label>
+    <input id="garment-order" required placeholder="e.g. SS-001" style="display:block;box-sizing:border-box;width:100%;padding:10px;margin:6px 0 12px">
+
+    <label>Garment item</label>
+    <input id="garment-item" required placeholder="e.g. Shirt, Abaya, Blanket" style="display:block;box-sizing:border-box;width:100%;padding:10px;margin:6px 0 12px">
+
+    <label>Quantity received</label>
+    <input id="garment-qty" type="number" min="1" step="1" value="1" required style="display:block;box-sizing:border-box;width:100%;padding:10px;margin:6px 0 12px">
+
+    <label>Status</label>
+    <select id="garment-status" style="display:block;box-sizing:border-box;width:100%;padding:10px;margin:6px 0 12px">
+      <option>Received</option>
+      <option>Washing</option>
+      <option>Ready for Collection</option>
+      <option>Delivered</option>
+    </select>
+
+    <button type="submit" style="padding:12px;background:#087443;color:white;border:0;border-radius:6px">Save Garment Record</button>
+  </form>
+
+  <h3>Inventory Summary</h3>
+  <p id="garment-summary">Loading...</p>
+
+  <label>Filter by status</label>
+  <select id="garment-filter" style="display:block;box-sizing:border-box;width:100%;padding:10px;margin:6px 0 12px">
+    <option value="All">All statuses</option>
+    <option>Received</option>
+    <option>Washing</option>
+    <option>Ready for Collection</option>
+    <option>Delivered</option>
+  </select>
+
+  <div id="garment-list"></div>
+</section>
+
+<script>
+(function () {
+  const key = 'spotlessSpinGarmentInventory';
+  const form = document.getElementById('garment-form');
+  const list = document.getElementById('garment-list');
+  const filter = document.getElementById('garment-filter');
+  const summary = document.getElementById('garment-summary');
+
+  function records() {
+    try {
+      const data = JSON.parse(localStorage.getItem(key) || '[]');
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function save(data) {
+    localStorage.setItem(key, JSON.stringify(data));
+  }
+
+  function render() {
+    const data = records();
+    const active = data.filter(x => x.status !== 'Delivered');
+    summary.textContent =
+      'Active garments: ' + active.reduce((n, x) => n + x.qty, 0) +
+      ' | Received: ' + data.filter(x => x.status === 'Received').reduce((n, x) => n + x.qty, 0) +
+      ' | Washing: ' + data.filter(x => x.status === 'Washing').reduce((n, x) => n + x.qty, 0) +
+      ' | Ready: ' + data.filter(x => x.status === 'Ready for Collection').reduce((n, x) => n + x.qty, 0) +
+      ' | Delivered: ' + data.filter(x => x.status === 'Delivered').reduce((n, x) => n + x.qty, 0);
+
+    list.replaceChildren();
+    const shown = data.filter(x => filter.value === 'All' || x.status === filter.value);
+
+    if (!shown.length) {
+      list.textContent = 'No garment records for this filter.';
+      return;
+    }
+
+    shown.slice().reverse().forEach(function (item) {
+      const card = document.createElement('div');
+      card.style.cssText = 'border:1px solid #ddd;border-radius:8px;padding:12px;margin:10px 0';
+
+      const details = document.createElement('p');
+      details.textContent = item.customer + ' | Order: ' + item.order +
+        ' | ' + item.item + ' | Qty: ' + item.qty;
+      card.appendChild(details);
+
+      const status = document.createElement('select');
+      ['Received', 'Washing', 'Ready for Collection', 'Delivered'].forEach(function (s) {
+        const option = document.createElement('option');
+        option.value = s;
+        option.textContent = s;
+        status.appendChild(option);
+      });
+      status.value = item.status;
+      status.style.cssText = 'padding:8px;max-width:100%';
+      status.addEventListener('change', function () {
+        const latest = records();
+        const target = latest.find(x => x.id === item.id);
+        if (target) {
+          target.status = status.value;
+          save(latest);
+          render();
+        }
+      });
+      card.appendChild(status);
+      list.appendChild(card);
+    });
+  }
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    const qty = Number(document.getElementById('garment-qty').value);
+    const customer = document.getElementById('garment-customer').value.trim();
+    const order = document.getElementById('garment-order').value.trim();
+    const item = document.getElementById('garment-item').value.trim();
+
+    if (!customer || !order || !item || !Number.isInteger(qty) || qty < 1) {
+      alert('Please enter a customer, order number, garment, and valid quantity.');
+      return;
+    }
+
+    const data = records();
+    data.push({
+      id: Date.now().toString() + Math.random().toString(16).slice(2),
+      customer: customer,
+      order: order,
+      item: item,
+      qty: qty,
+      status: document.getElementById('garment-status').value
+    });
+
+    try {
+      save(data);
+    } catch (e) {
+      alert('Could not save the record. Please check your browser storage.');
+      return;
+    }
+
+    form.reset();
+    document.getElementById('garment-qty').value = '1';
+    render();
+    alert('Garment record saved.');
+  });
+
+  filter.addEventListener('change', render);
+  render();
+})();
+</script>
 </body>
 </html>
