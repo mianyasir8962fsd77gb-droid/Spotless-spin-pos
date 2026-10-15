@@ -2,306 +2,222 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#087443">
 <title>SPOTLESS SPIN LAUNDRY POS</title>
-<link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#168447">
-<meta name="mobile-web-app-capable" content="yes">  
 <style>
 *{box-sizing:border-box}
-body{font-family:Arial,sans-serif;margin:0;background:#f0f7f3;color:#183b30}
-header{background:#087653;color:white;text-align:center;padding:22px 10px}
-main{max-width:800px;margin:auto;padding:12px}
-.card{background:white;padding:16px;margin:12px 0;border-radius:12px}
-label{display:block;font-weight:bold;margin-top:12px;font-size:14px}
-input,select,textarea,button{width:100%;padding:12px;margin-top:5px;font:inherit;border-radius:8px}
-input,select,textarea{border:1px solid #ccc;background:white}
-button{background:#087653;color:white;border:0;font-weight:bold}
-.secondary{background:#e3eee8;color:#183b30}
-.danger{background:#a83232}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.item,.order{border:1px solid #d7e2dc;border-radius:9px;padding:12px;margin:10px 0}
-.total{font-size:23px;color:#087653;font-weight:bold;margin:15px 0}
-.small{font-size:13px;color:#53675d}
-@media(max-width:480px){.row{grid-template-columns:1fr}}
+body{margin:0;font-family:Arial,sans-serif;background:#f2f6f3;color:#17372a}
+header{background:#087443;color:white;padding:22px 16px}
+header h1{font-size:22px;margin:0 0 6px}
+header p{margin:0;font-size:13px}
+main{max-width:800px;margin:auto;padding:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stat,.panel{background:white;padding:14px;border-radius:12px;box-shadow:0 2px 8px #0000000b}
+.stat strong{display:block;font-size:19px;margin-top:8px;overflow-wrap:anywhere}
+.stat span{font-size:12px;color:#60766a}
+h2{font-size:18px;margin:0 0 14px}
+.panel{margin-bottom:14px}
+label{display:block;font-size:13px;font-weight:bold;margin:11px 0 5px}
+input,select{width:100%;padding:12px;border:1px solid #ccd9d0;border-radius:8px;background:white;font-size:16px;color:#17372a}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{border:0;border-radius:8px;padding:12px;font-size:14px;font-weight:bold;cursor:pointer}
+.primary{background:#087443;color:white;width:100%;margin-top:15px}
+.secondary{background:#e4f3e9;color:#08653b}
+.danger{background:#fff0ed;color:#a72b20}
+.order{border:1px solid #e0e9e3;padding:12px;border-radius:9px;margin-top:10px}
+.orderhead{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.order p{font-size:13px;line-height:1.5;margin:8px 0}
+.order select{margin-top:7px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+.actions button{flex:1}
+.muted{color:#65796d;font-size:12px}
+.empty{color:#65796d;text-align:center;padding:20px}
+footer{text-align:center;padding:16px;color:#65796d;font-size:12px}
+@media(max-width:420px){.stats{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}}
+@media print{header, .no-print, footer{display:none!important}body{background:white}main{padding:0}.panel,.stat{box-shadow:none}}
 </style>
-<link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#168447">
-<meta name="mobile-web-app-capable" content="yes">
 </head>
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js");
-  });
-}
-</script>
 <body>
 <header>
 <h1>SPOTLESS SPIN</h1>
-<div>LAUNDRY W.L.L.</div>
-<div>LAUNDRY POS • BAHRAIN</div>
+<p>LAUNDRY W.L.L. · POINT OF SALE</p>
+<p>Kingdom of Bahrain · BHD</p>
 </header>
 <main>
-<section class="card">
-<h2>New Laundry Order</h2>
-<form id="orderForm">
-<label>Customer name *</label>
-<input id="customer" required placeholder="Customer name">
-<label>Phone / WhatsApp</label>
-<input id="phone" type="tel" placeholder="Phone number">
-<label>Service</label>
-<select id="service">
-<option>Wash & Fold</option>
-<option>Wash & Iron</option>
-<option>Ironing</option>
-<option>Dry Cleaning</option>
-<option>Blanket / Duvet Cleaning</option>
-</select>
-<h3>Clothing & Household Items</h3>
-<div id="items"></div>
-<button type="button" id="addItem" class="secondary">+ ADD ITEM</button>
-<div class="total" id="total">Total: BHD 0.000</div>
-<div class="row">
-<div><label>Payment received (BHD)</label><input id="paid" type="number" min="0" step="0.001" value="0" required></div>
-<div><label>Promised date</label><input id="due" type="date"></div>
+<div class="stats">
+<div class="stat"><span>Total Orders</span><strong id="totalOrders">0</strong></div>
+<div class="stat"><span>In Progress</span><strong id="activeOrders">0</strong></div>
+<div class="stat"><span>Total Sales</span><strong id="totalSales">BHD 0.000</strong></div>
 </div>
-<label>Order status</label>
-<select id="status">
-<option>Received</option><option>Processing</option><option>Ready</option><option>Delivered</option>
+
+<section class="panel no-print">
+<h2>Create New Order</h2>
+<form id="orderForm">
+<div class="grid">
+<div><label for="customer">Customer Name *</label><input id="customer" required placeholder="Customer name"></div>
+<div><label for="phone">Phone Number</label><input id="phone" type="tel" placeholder="Phone number"></div>
+</div>
+<label for="service">Laundry Service *</label>
+<select id="service" required>
+<option value="Wash & Fold|1.000">Wash & Fold</option>
+<option value="Wash & Iron|1.500">Wash & Iron</option>
+<option value="Ironing Only|0.500">Ironing Only</option>
+<option value="Dry Cleaning|2.000">Dry Cleaning</option>
+<option value="Blanket Cleaning|3.000">Blanket Cleaning</option>
+<option value="Abaya Cleaning|1.500">Abaya Cleaning</option>
+<option value="Other|0">Other / Custom Price</option>
 </select>
-<label>Notes</label>
-<textarea id="notes" rows="2" placeholder="Special instructions"></textarea>
-<button type="submit">SAVE ORDER</button>
+<div class="grid">
+<div><label for="qty">Quantity</label><input id="qty" type="number" min="1" value="1" required></div>
+<div><label for="price">Unit Price (BHD)</label><input id="price" type="number" min="0" step="0.001" value="1.000" required></div>
+</div>
+<label for="notes">Notes / Special Instructions</label>
+<input id="notes" placeholder="Optional">
+<label for="due">Expected Delivery Date</label>
+<input id="due" type="date">
+<div style="margin-top:14px">Order total: <strong id="estimate">BHD 1.000</strong></div>
+<button class="primary" type="submit">+ Create Laundry Order</button>
 </form>
 </section>
 
-<section class="card">
-<h2>View Orders</h2>
-<input id="search" placeholder="Search customer or phone">
-<div class="row">
-<button type="button" id="allBtn">ALL ORDERS</button>
-<button type="button" id="balanceBtn" class="secondary">BALANCE DUE</button>
+<section class="panel">
+<h2>Order Management</h2>
+<div class="no-print">
+<label for="search">Search Orders</label>
+<input id="search" placeholder="Order number, name or phone">
+<label for="filter">Filter by Status</label>
+<select id="filter">
+<option value="">All Orders</option>
+<option>Received</option>
+<option>Washing</option>
+<option>Ready</option>
+<option>Delivered</option>
+</select>
 </div>
-<div id="orders"></div>
+<div id="orders"><div class="empty">No orders yet. Create your first order above.</div></div>
 </section>
-
-<section class="card">
-<h2>Business Summary</h2>
-<div id="summary">No orders yet.</div>
-<p class="small">Orders are saved in this browser on this device only. They do not sync to other phones. Keep a separate backup of business records.</p>
-</section>
+<footer>SPOTLESS SPIN LAUNDRY W.L.L. · POS</footer>
 </main>
 
 <script>
-const catalog=[
-["Shirt",0.500],["T-Shirt",0.400],["Trouser",0.700],
-["Jeans",0.800],["Shorts",0.400],["Thobe / Kandura",1.000],
-["Suit - 2 Piece",2.000],["Suit - 3 Piece",2.500],
-["Jacket",1.500],["Dress",1.500],["Abaya",1.000],
-["Skirt",0.700],["School Uniform",0.700],
-["Bedsheet",1.000],["Pillow Cover",0.300],["Pillow",1.000],
-["Towel",0.300],["Blanket",2.000],["Duvet",3.000],
-["Curtain",1.500],["Carpet",3.000],["Other Item",1.000]
-];
-
 const $=id=>document.getElementById(id);
-const money=n=>"BHD "+Number(n||0).toFixed(3);
+const money=n=>'BHD '+Number(n).toFixed(3);
+const today=()=>new Date().toISOString().slice(0,10);
 let orders=[];
-let balanceOnly=false;
-let nextId=1;
+try{orders=JSON.parse(localStorage.getItem('spotlessSpinOrders')||'[]')}catch(e){orders=[]}
 
-try {
- orders=JSON.parse(localStorage.getItem("spotlessOrders")||"[]");
- if(!Array.isArray(orders)) orders=[];
-} catch(e) { orders=[]; }
-
-function persist(){
- try {
-  localStorage.setItem("spotlessOrders",JSON.stringify(orders));
-  return true;
- } catch(e) {
-  alert("Saving failed. Your browser may not have enough storage.");
-  return false;
- }
+function save(){
+ try{
+ localStorage.setItem('spotlessSpinOrders',JSON.stringify(orders));
+ }catch(e){alert('Could not save on this device. Please check your browser storage.')}
+ render();
 }
-
-function addItem(name="Shirt",qty=1,price=null){
- const box=document.createElement("div");
- box.className="item";
- const options=catalog.map(x=>'<option value="'+x[0]+'">'+x[0]+'</option>').join("");
- box.innerHTML=
-  '<label>Item</label><select class="itemName">'+options+'</select>'+
-  '<div class="row"><div><label>Quantity</label><input class="itemQty" type="number" min="1" step="1" value="'+qty+'"></div>'+
-  '<div><label>Price per item (BHD)</label><input class="itemPrice" type="number" min="0" step="0.001"></div></div>'+
-  '<p class="small lineTotal"></p><button type="button" class="danger remove">REMOVE ITEM</button>';
- $("items").appendChild(box);
-
- const sel=box.querySelector(".itemName");
- const q=box.querySelector(".itemQty");
- const p=box.querySelector(".itemPrice");
- sel.value=name;
- const defaultPrice=catalog.find(x=>x[0]===name);
- p.value=price===null?(defaultPrice?defaultPrice[1]:0):price;
-
- function update(){
-  const qty=Math.max(0,Number(q.value)||0);
-  const priceValue=Math.max(0,Number(p.value)||0);
-  box.querySelector(".lineTotal").textContent="Line total: "+money(qty*priceValue);
-  updateTotal();
- }
- sel.addEventListener("change",()=>{
-  const found=catalog.find(x=>x[0]===sel.value);
-  p.value=found?found[1]:"0";
-  update();
- });
- q.addEventListener("input",update);
- p.addEventListener("input",update);
- box.querySelector(".remove").addEventListener("click",()=>{
-  box.remove();updateTotal();
- });
- update();
+function updateEstimate(){
+ const q=Math.max(0,Number($('qty').value)||0);
+ const p=Math.max(0,Number($('price').value)||0);
+ $('estimate').textContent=money(q*p);
 }
+$('service').addEventListener('change',()=>{
+ const parts=$('service').value.split('|');
+ if(parts[0]==='Other')$('price').value='0.000';
+ else $('price').value=Number(parts[1]).toFixed(3);
+ updateEstimate();
+});
+$('qty').addEventListener('input',updateEstimate);
+$('price').addEventListener('input',updateEstimate);
 
-function readItems(){
- return Array.from($("items").querySelectorAll(".item")).map(box=>({
-  name:box.querySelector(".itemName").value,
-  qty:Math.floor(Number(box.querySelector(".itemQty").value)||0),
-  price:Math.max(0,Number(box.querySelector(".itemPrice").value)||0)
- })).filter(x=>x.qty>0);
-}
-
-function updateTotal(){
- const total=readItems().reduce((s,x)=>s+x.qty*x.price,0);
- $("total").textContent="Total: "+money(total);
- return total;
-}
-
-function safe(s){
- return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-}
-
-$("addItem").addEventListener("click",()=>addItem());
-$("orderForm").addEventListener("submit",e=>{
+$('orderForm').addEventListener('submit',e=>{
  e.preventDefault();
- const items=readItems();
- if(!items.length){alert("Please add at least one item.");return;}
- const total=items.reduce((s,x)=>s+x.qty*x.price,0);
- const paid=Number($("paid").value)||0;
- if(paid<0||paid>total){alert("Payment must be between zero and the total.");return;}
-
- const order={
-  id:Date.now(),
-  customer:$("customer").value.trim(),
-  phone:$("phone").value.trim(),
-  service:$("service").value,
-  items:items,
-  total:total,
-  paid:paid,
-  due:$("due").value,
-  status:$("status").value,
-  notes:$("notes").value.trim(),
-  created:new Date().toLocaleString()
- };
- orders.push(order);
- if(!persist()){orders.pop();return;}
- $("orderForm").reset();
- $("items").innerHTML="";
- addItem();
- $("paid").value="0";
- $("status").value="Received";
- updateTotal();
- renderOrders();
- alert("Order saved successfully!");
+ const qty=Number($('qty').value);
+ const price=Number($('price').value);
+ if(qty<1||price<0||!Number.isFinite(qty)||!Number.isFinite(price)){
+ alert('Please enter a valid quantity and price.');return;
+ }
+ const service=$('service').value.split('|')[0];
+ const next=Math.max(0,...orders.map(o=>Number(o.id)||0))+1;
+ orders.unshift({
+ id:next,customer:$('customer').value.trim(),
+ phone:$('phone').value.trim(),service,qty,price,
+ total:qty*price,notes:$('notes').value.trim(),
+ due:$('due').value,status:'Received',
+ date:new Date().toLocaleString()
+ });
+ save();
+ $('orderForm').reset();
+ $('qty').value=1;$('price').value='1.000';
+ updateEstimate();
+ alert('Order #'+String(next).padStart(4,'0')+' created successfully!');
 });
 
-function renderOrders(){
- const query=$("search").value.trim().toLowerCase();
- const list=orders.filter(o=>{
-  const matches=(o.customer+" "+o.phone+" "+o.id).toLowerCase().includes(query);
-  return matches&&(!balanceOnly||o.total>o.paid);
- }).slice().reverse();
- $("orders").innerHTML="";
-
- if(!list.length){
-  $("orders").textContent="No matching orders found.";
- }
-
- list.forEach(o=>{
-  const box=document.createElement("div");
-  box.className="order";
-  const itemLines=(o.items||[]).map(i=>
-   safe(i.name)+" × "+i.qty+" — "+money(i.qty*i.price)
-  ).join("<br>");
-
-  box.innerHTML=
-   '<h3>Order '+String(o.id).slice(-6)+' — '+safe(o.customer)+'</h3>'+
-   '<p>Phone: '+safe(o.phone||"Not provided")+'</p>'+
-   '<p>Service: '+safe(o.service)+'</p>'+
-   '<p>'+itemLines+'</p>'+
-   '<p><b>Total: '+money(o.total)+'</b></p>'+
-   '<p>Paid: '+money(o.paid)+' | Balance: '+money(o.total-o.paid)+'</p>'+
-   '<p>Due date: '+safe(o.due||"Not set")+'</p>'+
-   '<p>Notes: '+safe(o.notes||"None")+'</p>'+
-   '<label>Update status</label>'+
-   '<select class="orderStatus"><option>Received</option><option>Processing</option><option>Ready</option><option>Delivered</option></select>'+
-   '<label>Update total payment received (BHD)</label>'+
-   '<input class="orderPaid" type="number" min="0" step="0.001">'+
-   '<button type="button" class="update">SAVE UPDATES</button>'+
-   '<button type="button" class="print secondary">PRINT RECEIPT</button>';
-
-  const status=box.querySelector(".orderStatus");
-  status.value=o.status||"Received";
-  box.querySelector(".orderPaid").value=o.paid||0;
-
-  box.querySelector(".update").addEventListener("click",()=>{
-   const newPaid=Number(box.querySelector(".orderPaid").value);
-   if(!Number.isFinite(newPaid)||newPaid<0||newPaid>o.total){
-    alert("Payment must be between zero and the order total.");return;
-   }
-   o.status=status.value;
-   o.paid=newPaid;
-   if(persist())renderOrders();
-  });
-
-  box.querySelector(".print").addEventListener("click",()=>{
-   const w=window.open("","_blank");
-   if(!w){alert("Allow pop-ups to print the receipt.");return;}
-   const lines=(o.items||[]).map(i=>"<p>"+safe(i.name)+" × "+i.qty+" — "+money(i.qty*i.price)+"</p>").join("");
-   w.document.write('<html><head><title>Receipt</title></head><body>'+
-    '<h2>SPOTLESS SPIN LAUNDRY W.L.L.</h2>'+
-    '<p>Order: '+String(o.id).slice(-6)+'</p>'+
-    '<p>Customer: '+safe(o.customer)+'</p>'+
-    '<p>Phone: '+safe(o.phone||"")+'</p>'+lines+
-    '<p>Total: '+money(o.total)+'</p><p>Paid: '+money(o.paid)+'</p>'+
-    '<p>Balance: '+money(o.total-o.paid)+'</p>'+
-    '<p>Status: '+safe(o.status)+'</p>'+
-    '<p>Thank you for choosing us!</p></body></html>');
-   w.document.close();w.print();
-  });
-  $("orders").appendChild(box);
- });
-
- const sales=orders.reduce((s,o)=>s+Number(o.total||0),0);
- const paid=orders.reduce((s,o)=>s+Number(o.paid||0),0);
- $("summary").textContent="Orders: "+orders.length+
-  " | Sales: "+money(sales)+" | Received: "+money(paid)+
-  " | Outstanding: "+money(sales-paid);
+function escapeHTML(s){
+ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-
-$("search").addEventListener("input",renderOrders);
-$("allBtn").addEventListener("click",()=>{balanceOnly=false;renderOrders();});
-$("balanceBtn").addEventListener("click",()=>{balanceOnly=true;renderOrders();});
-
-addItem();
-renderOrders();
-</script>
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", function () {
-      navigator.serviceWorker.register("./service-worker.js");
-    });
-  }
+function render(){
+ $('totalOrders').textContent=orders.length;
+ $('activeOrders').textContent=orders.filter(o=>o.status!=='Delivered').length;
+ $('totalSales').textContent=money(orders.filter(o=>o.status==='Delivered').reduce((s,o)=>s+Number(o.total||0),0));
+ const query=$('search').value.toLowerCase();
+ const status=$('filter').value;
+ const list=orders.filter(o=>
+ (!status||o.status===status)&&
+ [o.id,o.customer,o.phone,o.service].some(v=>String(v||'').toLowerCase().includes(query))
+ );
+ if(!list.length){
+ $('orders').innerHTML='<div class="empty">No matching orders found.</div>';return;
+ }
+ $('orders').innerHTML=list.map(o=>`
+ <article class="order">
+ <div class="orderhead">
+ <strong>Order #${String(o.id).padStart(4,'0')}</strong>
+ <strong>${money(o.total)}</strong>
+ </div>
+ <p><strong>${escapeHTML(o.customer)}</strong><br>
+ ${escapeHTML(o.phone||'No phone number')}<br>
+ ${escapeHTML(o.service)} · Quantity: ${o.qty}<br>
+ Unit price: ${money(o.price)}<br>
+ <span class="muted">Created: ${escapeHTML(o.date)}</span>
+ ${o.due?'<br>Due: '+escapeHTML(o.due):''}
+ ${o.notes?'<br>Notes: '+escapeHTML(o.notes):''}</p>
+ <label>Status</label>
+ <select class="no-print" onchange="changeStatus(${o.id},this.value)">
+ ${['Received','Washing','Ready','Delivered'].map(s=>`<option ${o.status===s?'selected':''}>${s}</option>`).join('')}
+ </select>
+ <p><strong>Status:</strong> ${escapeHTML(o.status)}</p>
+ <div class="actions no-print">
+ <button class="secondary" onclick="receipt(${o.id})">Print Receipt</button>
+ <button class="danger" onclick="deleteOrder(${o.id})">Delete</button>
+ </div>
+ </article>`).join('');
+}
+function changeStatus(id,status){
+ const o=orders.find(o=>o.id===id);
+ if(o){o.status=status;save();}
+}
+function deleteOrder(id){
+ if(!confirm('Delete this order permanently from this device?'))return;
+ orders=orders.filter(o=>o.id!==id);save();
+}
+function receipt(id){
+ const o=orders.find(o=>o.id===id);if(!o)return;
+ const w=window.open('','_blank','width=400,height=600');
+ if(!w){alert('Allow pop-ups in your browser to print receipts.');return;}
+ w.document.write(`<!DOCTYPE html><html><head><title>Receipt</title>
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <style>body{font-family:Arial;padding:20px;color:#17372a}h2{text-align:center}hr{border:0;border-top:1px dashed #888}p{line-height:1.6}.total{font-size:20px;font-weight:bold}</style>
+ </head><body><h2>SPOTLESS SPIN</h2><center>LAUNDRY W.L.L.<br>Kingdom of Bahrain</center><hr>
+ <p>Receipt / Order #${String(o.id).padStart(4,'0')}<br>Date: ${escapeHTML(o.date)}<br>
+ Customer: ${escapeHTML(o.customer)}<br>Phone: ${escapeHTML(o.phone||'-')}</p><hr>
+ <p>Service: ${escapeHTML(o.service)}<br>Quantity: ${o.qty}<br>Unit Price: ${money(o.price)}</p><hr>
+ <p class="total">TOTAL: ${money(o.total)}</p>
+ <p>Status: ${escapeHTML(o.status)}</p><center>Thank you for choosing us!</center>
+ <script>window.onload=()=>window.print();<\/script></body></html>`);
+ w.document.close();
+}
+$('search').addEventListener('input',render);
+$('filter').addEventListener('change',render);
+updateEstimate();
+render();
 </script>
 </body>
 </html>
