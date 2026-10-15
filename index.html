@@ -351,5 +351,138 @@ render();
   refreshOrders();
 })();
 </script>
+<section id="paymentTracker" style="margin:20px auto;padding:16px;max-width:900px;background:#f0f8f2;border:1px solid #c9dfcf;border-radius:12px;font-family:Arial,sans-serif;color:#183b28;">
+  <h2 style="margin-top:0;">Payment Tracking</h2>
+  <p>Track payments received and outstanding balances for your laundry orders.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:10px;margin:15px 0;">
+    <div style="background:white;padding:12px;border-radius:8px;flex:1;min-width:130px;">
+      <small>Total Received (BHD)</small>
+      <h3 id="paymentReceived" style="margin:8px 0;">0.000</h3>
+    </div>
+    <div style="background:white;padding:12px;border-radius:8px;flex:1;min-width:130px;">
+      <small>Outstanding (BHD)</small>
+      <h3 id="paymentOutstanding" style="margin:8px 0;">0.000</h3>
+    </div>
+    <div style="background:white;padding:12px;border-radius:8px;flex:1;min-width:130px;">
+      <small>Unpaid Orders</small>
+      <h3 id="paymentUnpaid" style="margin:8px 0;">0</h3>
+    </div>
+  </div>
+  <button type="button" onclick="refreshPaymentTracker()" style="padding:10px 14px;background:#176b3a;color:white;border:0;border-radius:6px;margin-bottom:12px;">Refresh Orders</button>
+  <div id="paymentOrderList"></div>
+  <p style="font-size:12px;">Enter the total amount received for each order, then tap Save Payment. Amounts are in BHD.</p>
+</section>
+
+<script>
+(function () {
+  const paymentKey = "spotlessSpinOrders";
+
+  function getPaymentOrders() {
+    try {
+      const data = JSON.parse(localStorage.getItem(paymentKey) || "[]");
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function formatBHD(amount) {
+    return (Number(amount) || 0).toFixed(3);
+  }
+
+  window.refreshPaymentTracker = function () {
+    const orders = getPaymentOrders();
+    const list = document.getElementById("paymentOrderList");
+    let received = 0;
+    let outstanding = 0;
+    let unpaidCount = 0;
+
+    if (!list) return;
+
+    if (orders.length === 0) {
+      list.innerHTML = "<p>No orders found yet. Create an order first, then tap Refresh Orders.</p>";
+    } else {
+      list.innerHTML = "";
+
+      orders.forEach(function (order) {
+        const total = Math.max(0, Number(order.total) || 0);
+        const paid = Math.max(0, Number(order.paidAmount) || 0);
+        const balance = Math.max(0, total - paid);
+        received += Math.min(paid, total);
+        outstanding += balance;
+        if (balance > 0) unpaidCount++;
+
+        const status = paid <= 0 ? "Unpaid" : balance <= 0 ? "Paid" : "Partially Paid";
+        const card = document.createElement("div");
+        card.style.cssText = "background:white;border:1px solid #d6e4d9;border-radius:8px;padding:12px;margin:10px 0;";
+
+        const heading = document.createElement("strong");
+        heading.textContent = "Order #" + (order.id ?? "") + " — " + (order.customer || "Customer");
+        card.appendChild(heading);
+
+        const details = document.createElement("p");
+        details.textContent = "Total: BHD " + formatBHD(total) + " | Paid: BHD " + formatBHD(paid) + " | Balance: BHD " + formatBHD(balance);
+        details.style.margin = "8px 0";
+        card.appendChild(details);
+
+        const statusLine = document.createElement("p");
+        statusLine.textContent = "Payment status: " + status;
+        statusLine.style.cssText = "font-weight:bold;margin:8px 0;color:" + (balance <= 0 ? "#176b3a" : paid > 0 ? "#9a6700" : "#b42318");
+        card.appendChild(statusLine);
+
+        const label = document.createElement("label");
+        label.textContent = "Total payment received (BHD)";
+        label.style.cssText = "display:block;margin-bottom:5px;";
+        card.appendChild(label);
+
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = "0";
+        input.max = formatBHD(total);
+        input.step = "0.001";
+        input.value = formatBHD(paid);
+        input.setAttribute("aria-label", "Total payment received for order " + order.id);
+        input.style.cssText = "box-sizing:border-box;width:100%;padding:10px;border:1px solid #aaa;border-radius:6px;";
+        card.appendChild(input);
+
+        const saveButton = document.createElement("button");
+        saveButton.type = "button";
+        saveButton.textContent = "Save Payment";
+        saveButton.style.cssText = "margin-top:8px;padding:10px 14px;background:#176b3a;color:white;border:0;border-radius:6px;";
+        saveButton.addEventListener("click", function () {
+          const amount = Number(input.value);
+          if (!Number.isFinite(amount) || amount < 0 || amount > total + 0.000001) {
+            alert("Enter an amount from 0 up to the order total (BHD " + formatBHD(total) + ").");
+            return;
+          }
+
+          const latestOrders = getPaymentOrders();
+          const target = latestOrders.find(function (item) {
+            return String(item.id) === String(order.id);
+          });
+
+          if (!target) {
+            alert("Order not found. Tap Refresh Orders and try again.");
+            return;
+          }
+
+          target.paidAmount = Math.round(amount * 1000) / 1000;
+          localStorage.setItem(paymentKey, JSON.stringify(latestOrders));
+          refreshPaymentTracker();
+          alert("Payment saved.");
+        });
+        card.appendChild(saveButton);
+        list.appendChild(card);
+      });
+    }
+
+    document.getElementById("paymentReceived").textContent = formatBHD(received);
+    document.getElementById("paymentOutstanding").textContent = formatBHD(outstanding);
+    document.getElementById("paymentUnpaid").textContent = String(unpaidCount);
+  };
+
+  window.refreshPaymentTracker();
+})();
+</script>
 </body>
 </html>
