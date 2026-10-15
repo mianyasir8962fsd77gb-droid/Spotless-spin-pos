@@ -200,6 +200,15 @@ function deleteOrder(id){
 }
 function receipt(id){
  const o=orders.find(o=>o.id===id);if(!o)return;
+let savedOrder=o;
+try {
+  const savedOrders=JSON.parse(localStorage.getItem('spotlessSpinOrders')||'[]');
+  savedOrder=savedOrders.find(item=>String(item.id)===String(o.id))||o;
+} catch(e) {}
+const total=Math.max(0,Number(o.total)||0);
+const paid=Math.max(0,Number(savedOrder.paidAmount)||0);
+const balance=Math.max(0,total-paid);
+const paymentStatus=paid<=0?'Unpaid':balance<=0?'Paid':'Partially Paid';
  const w=window.open('','_blank','width=400,height=600');
  if(!w){alert('Allow pop-ups in your browser to print receipts.');return;}
  w.document.write(`<!DOCTYPE html><html><head><title>Receipt</title>
