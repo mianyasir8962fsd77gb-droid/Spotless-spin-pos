@@ -766,5 +766,70 @@ if ('serviceWorker' in navigator) {
   render();
 })();
 </script>
+<script>
+(function () {
+  const garment = document.getElementById('garment');
+  const service = document.getElementById('service');
+
+  if (!garment || !service) return;
+
+  const common = [
+    'Dry Clean',
+    'Wash & Iron',
+    'Iron Only',
+    'Urgent Iron',
+    'Wash & Iron Urgent'
+  ];
+
+  const services = {
+    'Abaya': common,
+    'Shirt': common,
+    'T-Shirt': common,
+    'Trousers': common,
+    'Jeans': common,
+    'Suit': ['Dry Clean', 'Iron Only', 'Urgent Iron'],
+    'Blazer': ['Dry Clean', 'Iron Only', 'Urgent Iron'],
+    'Dress': common,
+    'Skirt': common,
+    'Jacket': ['Dry Clean', 'Wash & Iron', 'Iron Only'],
+    'Coat': ['Dry Clean', 'Iron Only'],
+    'Kandura / Thobe': common,
+    'Ghutra / Shemagh': common,
+    'Uniform': common,
+    'Socks': ['Wash', 'Wash & Iron'],
+    'Underwear': ['Wash', 'Wash & Iron'],
+    'Towel': ['Wash', 'Wash & Iron', 'Urgent Wash'],
+    'Bedsheet': ['Wash', 'Wash & Iron', 'Urgent Wash'],
+    'Blanket': ['Blanket Cleaning', 'Dry Clean'],
+    'Duvet / Comforter': ['Duvet Cleaning', 'Dry Clean'],
+    'Pillow': ['Pillow Cleaning', 'Dry Clean'],
+    'Curtains': ['Curtain Cleaning', 'Dry Clean'],
+    'Carpet / Rug': ['Carpet Cleaning', 'Deep Cleaning'],
+    'Sofa Cleaning': ['Sofa Cleaning', 'Deep Cleaning'],
+    'Mattress / Bed Cleaning': ['Mattress Cleaning', 'Bed Cleaning', 'Deep Cleaning'],
+    'Shoes': ['Shoe Cleaning', 'Deep Cleaning', 'Urgent Shoe Cleaning'],
+    'Handbag': ['Bag Cleaning', 'Deep Cleaning'],
+    'Backpack': ['Bag Cleaning', 'Wash'],
+    'Car Wash': ['Exterior Car Wash', 'Interior Car Cleaning', 'Full Car Wash'],
+    'Car Interior Cleaning': ['Interior Car Cleaning', 'Deep Interior Cleaning'],
+    'Other': ['Dry Clean', 'Wash & Iron', 'Iron Only', 'Custom Service']
+  };
+
+  function updateServices() {
+    const choices = services[garment.value] || common;
+    service.replaceChildren();
+
+    choices.forEach(function (name) {
+      const option = document.createElement('option');
+      option.value = name;
+      option.textContent = name;
+      service.appendChild(option);
+    });
+  }
+
+  garment.addEventListener('change', updateServices);
+  updateServices();
+})();
+</script>
 </body>
 </html>
