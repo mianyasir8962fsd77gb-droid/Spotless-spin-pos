@@ -501,5 +501,83 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+<section id="custom-item-manager" style="margin:20px;padding:16px;border:1px solid #087443;border-radius:12px;font-family:Arial,sans-serif">
+  <h2 style="color:#087443">Manage Laundry Items</h2>
+  <p>Add your own items and prices in BHD.</p>
+  <form id="custom-item-form">
+    <label for="custom-item-name">Item name</label>
+    <input id="custom-item-name" required placeholder="e.g. Abaya, Blanket, Curtains" style="display:block;box-sizing:border-box;width:100%;padding:12px;margin:8px 0">
+    <label for="custom-item-price">Price (BHD)</label>
+    <input id="custom-item-price" type="number" min="0.001" step="0.001" required placeholder="1.000" style="display:block;box-sizing:border-box;width:100%;padding:12px;margin:8px 0">
+    <button type="submit" style="padding:12px;background:#087443;color:white;border:0;border-radius:6px">Save Item</button>
+  </form>
+  <h3>My Saved Items</h3>
+  <div id="custom-item-list"></div>
+</section>
+<script>
+(function () {
+  const storageKey = 'spotlessSpinCustomItems';
+  const form = document.getElementById('custom-item-form');
+  const nameInput = document.getElementById('custom-item-name');
+  const priceInput = document.getElementById('custom-item-price');
+  const list = document.getElementById('custom-item-list');
+
+  function getItems() {
+    try {
+      return JSON.parse(localStorage.getItem(storageKey) || '[]');
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function showItems() {
+    list.replaceChildren();
+    getItems().forEach(function (item, index) {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid #ddd';
+
+      const details = document.createElement('span');
+      details.textContent = item.name + ' — BHD ' + Number(item.price).toFixed(3);
+
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.textContent = 'Remove';
+      remove.addEventListener('click', function () {
+        const items = getItems();
+        items.splice(index, 1);
+        localStorage.setItem(storageKey, JSON.stringify(items));
+        showItems();
+      });
+
+      row.append(details, remove);
+      list.appendChild(row);
+    });
+
+    if (!list.children.length) {
+      list.textContent = 'No items saved yet.';
+    }
+  }
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    const name = nameInput.value.trim();
+    const price = Number(priceInput.value);
+
+    if (!name || !Number.isFinite(price) || price <= 0) {
+      alert('Enter an item name and a price greater than zero.');
+      return;
+    }
+
+    const items = getItems();
+    items.push({ name: name, price: price });
+    localStorage.setItem(storageKey, JSON.stringify(items));
+    form.reset();
+    showItems();
+    alert('Item saved successfully.');
+  });
+
+  showItems();
+})();
+</script>
 </body>
 </html>
