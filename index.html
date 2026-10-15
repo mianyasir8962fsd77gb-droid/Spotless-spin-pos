@@ -219,5 +219,137 @@ $('filter').addEventListener('change',render);
 updateEstimate();
 render();
 </script>
+<!-- SPOTLESS SPIN WhatsApp Notifications -->
+<section class="panel no-print" id="whatsappPanel">
+  <h2>WhatsApp Customer Notification</h2>
+  <p class="muted">Send an order update directly to your customer.</p>
+
+  <label for="waOrder">Select Laundry Order</label>
+  <select id="waOrder">
+    <option value="">Choose an order</option>
+  </select>
+
+  <label for="waMessageType">Notification Type</label>
+  <select id="waMessageType">
+    <option value="received">Laundry Received</option>
+    <option value="washing">Laundry Being Washed</option>
+    <option value="ready">Ready for Collection</option>
+    <option value="delivered">Order Delivered</option>
+  </select>
+
+  <label for="waPreview">Message Preview</label>
+  <textarea id="waPreview" rows="6" style="width:100%;padding:12px;border:1px solid #ccd9d0;border-radius:8px;font:14px Arial;"></textarea>
+
+  <button type="button" class="primary" id="waSend">
+    Open WhatsApp Message
+  </button>
+</section>
+
+<script>
+(function () {
+  const orderSelect = document.getElementById('waOrder');
+  const typeSelect = document.getElementById('waMessageType');
+  const preview = document.getElementById('waPreview');
+  const sendButton = document.getElementById('waSend');
+
+  if (!orderSelect || !typeSelect || !preview || !sendButton) return;
+
+  function getOrders() {
+    try {
+      const data = JSON.parse(
+        localStorage.getItem('spotlessSpinOrders') || '[]'
+      );
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function refreshOrders() {
+    const previous = orderSelect.value;
+    const orders = getOrders();
+
+    orderSelect.innerHTML = '<option value="">Choose an order</option>';
+
+    orders.forEach(function (order) {
+      const option = document.createElement('option');
+      option.value = String(order.id);
+      option.textContent =
+        'Order #' + String(order.id).padStart(4, '0') +
+        ' - ' + (order.customer || 'Customer');
+      orderSelect.appendChild(option);
+    });
+
+    if (orders.some(function (o) {
+      return String(o.id) === previous;
+    })) {
+      orderSelect.value = previous;
+    }
+
+    updatePreview();
+  }
+
+  function updatePreview() {
+    const order = getOrders().find(function (o) {
+      return String(o.id) === orderSelect.value;
+    });
+
+    const type = typeSelect.value;
+    const messages = {
+      received: 'We have received your laundry order.',
+      washing: 'Your laundry is currently being washed.',
+      ready: 'Your laundry is ready for collection. Please visit us at your convenience.',
+      delivered: 'Your laundry order has been delivered. Thank you for choosing us!'
+    };
+
+    if (!order) {
+      preview.value = 'Please select a laundry order.';
+      return;
+    }
+
+    preview.value =
+      'Hello ' + (order.customer || 'Customer') + ',\n\n' +
+      messages[type] + '\n\n' +
+      'Laundry: SPOTLESS SPIN LAUNDRY W.L.L.\n' +
+      'Order: #' + String(order.id).padStart(4, '0') + '\n' +
+      'Service: ' + (order.service || '') + '\n' +
+      'Total: BHD ' + Number(order.total || 0).toFixed(3) + '\n\n' +
+      'Thank you for choosing SPOTLESS SPIN!';
+  }
+
+  orderSelect.addEventListener('change', updatePreview);
+  typeSelect.addEventListener('change', updatePreview);
+
+  sendButton.addEventListener('click', function () {
+    const order = getOrders().find(function (o) {
+      return String(o.id) === orderSelect.value;
+    });
+
+    if (!order) {
+      alert('Please select a laundry order first.');
+      return;
+    }
+
+    const phone = String(order.phone || '').replace(/\D/g, '');
+
+    if (!phone) {
+      alert('This order has no customer phone number. Please add a phone number to the order.');
+      return;
+    }
+
+    if (phone.length < 7) {
+      alert('Please check the customer phone number.');
+      return;
+    }
+
+    const url = 'https://wa.me/' + phone +
+      '?text=' + encodeURIComponent(preview.value);
+
+    window.open(url, '_blank');
+  });
+
+  refreshOrders();
+})();
+</script>
 </body>
 </html>
